@@ -1,15 +1,15 @@
 package com.infostride.springbootpostgress.controller;
 
 import com.infostride.springbootpostgress.exception.ResourceNotFoundException;
+import com.infostride.springbootpostgress.model.AllEmployeeResponse;
 import com.infostride.springbootpostgress.model.Employee;
+import com.infostride.springbootpostgress.model.EmployeeResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.infostride.springbootpostgress.repository.EmployeeRepository;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @CrossOrigin(origins = "http://localhost:4200")
 @RestController
@@ -21,8 +21,22 @@ public class EmployeeController {
 
     // get all employees
     @GetMapping("/employees")
-    public List<Employee> getAllEmployees() {
-        return employeeRepository.findAll();
+    public AllEmployeeResponse getAllEmployees() {
+
+        AllEmployeeResponse allEmployeeResponse = new AllEmployeeResponse();
+        var empList = employeeRepository.findAll();
+        if (empList.isEmpty()){
+            allEmployeeResponse.setCode(404);
+            allEmployeeResponse.setMessage("Data not found!");
+            allEmployeeResponse.setEmployees(new ArrayList<>());
+        }else {
+            allEmployeeResponse.setCode(200);
+            allEmployeeResponse.setMessage("SUCCESS!");
+            allEmployeeResponse.setEmployees(empList);
+        }
+
+
+        return allEmployeeResponse;
     }
 
     // create employee rest api
@@ -33,10 +47,21 @@ public class EmployeeController {
 
     // get employee by id rest api
     @GetMapping("/employees/{id}")
-    public ResponseEntity<Employee> getEmployeeById(@PathVariable Long id) {
+    public ResponseEntity<EmployeeResponse> getEmployeeById(@PathVariable Long id) {
         Employee employee = employeeRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Employee not exist with id :" + id));
-        return ResponseEntity.ok(employee);
+        EmployeeResponse employeeResponse = new EmployeeResponse();
+        if (employee == null){
+            employeeResponse.setMessage("No data found!");
+            employeeResponse.setCode(404);
+            employeeResponse.setEmployee(null);
+        }else {
+            employeeResponse.setMessage("SUCCESS!");
+            employeeResponse.setCode(200);
+            employeeResponse.setEmployee(employee);
+        }
+
+        return ResponseEntity.ok(employeeResponse);
     }
 
     // update employee rest api
@@ -69,20 +94,37 @@ public class EmployeeController {
 
     // get employee by name rest api
     @GetMapping("/employees/name/{name}")
-    public ResponseEntity<Employee> getEmployeeByName(@PathVariable String name) {
+    public ResponseEntity<EmployeeResponse> getEmployeeByName(@PathVariable String name) {
+        EmployeeResponse employeeResponse = new EmployeeResponse();
         Employee employee = employeeRepository.findByFirstName(name);
-        if (employee != null)
-            System.out.println("BY NAME => " + employee.getFirstName());
-        return ResponseEntity.ok(employee);
+        if (employee == null){
+            employeeResponse.setMessage("No data found!");
+            employeeResponse.setCode(404);
+            employeeResponse.setEmployee(null);
+        }else {
+            employeeResponse.setMessage("SUCCESS!");
+            employeeResponse.setCode(200);
+            employeeResponse.setEmployee(employee);
+        }
+
+        return ResponseEntity.ok(employeeResponse);
     }
 
     // get employee by name rest api
     @GetMapping("/employees/salary/{grade}")
-    public ResponseEntity<List<Employee>> getEmployeeWithSalary(@PathVariable String grade) {
-        List<Employee> employee = employeeRepository.findByGrade(grade);
-        if (employee != null)
-            System.out.println("BY NAME => " + employee.toArray());
-        return ResponseEntity.ok(employee);
+    public AllEmployeeResponse getEmployeeWithSalary(@PathVariable String grade) {
+        var employee = employeeRepository.findByGrade(grade.toUpperCase(Locale.ROOT));
+        AllEmployeeResponse allEmployeeResponse = new AllEmployeeResponse();
+        if (employee.isEmpty()){
+            allEmployeeResponse.setCode(404);
+            allEmployeeResponse.setMessage("Data not found!");
+            allEmployeeResponse.setEmployees(new ArrayList<>());
+        }else {
+            allEmployeeResponse.setCode(200);
+            allEmployeeResponse.setMessage("SUCCESS!");
+            allEmployeeResponse.setEmployees(employee);
+        }
+        return allEmployeeResponse;
     }
 
 
