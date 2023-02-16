@@ -49,6 +49,7 @@ public class EmployeeController {
         employee.setFirstName(employeeDetails.getFirstName());
         employee.setLastName(employeeDetails.getLastName());
         employee.setEmailId(employeeDetails.getEmailId());
+        employee.setEmpGrade(employeeDetails.getEmpGrade());
 
         Employee updatedEmployee = employeeRepository.save(employee);
         return ResponseEntity.ok(updatedEmployee);
@@ -66,11 +67,21 @@ public class EmployeeController {
         return ResponseEntity.ok(response);
     }
 
+    // get employee by name rest api
     @GetMapping("/employees/name/{name}")
     public ResponseEntity<Employee> getEmployeeByName(@PathVariable String name) {
         Employee employee = employeeRepository.findByFirstName(name);
         if (employee != null)
             System.out.println("BY NAME => " + employee.getFirstName());
+        return ResponseEntity.ok(employee);
+    }
+
+    // get employee by name rest api
+    @GetMapping("/employees/salary/{grade}")
+    public ResponseEntity<List<Employee>> getEmployeeWithSalary(@PathVariable String grade) {
+        List<Employee> employee = employeeRepository.findByGrade(grade);
+        if (employee != null)
+            System.out.println("BY NAME => " + employee.toArray());
         return ResponseEntity.ok(employee);
     }
 
